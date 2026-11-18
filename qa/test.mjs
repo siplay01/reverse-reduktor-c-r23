@@ -32,6 +32,9 @@ for (const [name, eng] of [["chromium", chromium], ["webkit", webkit]]) {
     // 2. real addresses: card -> model page -> catalog -> node -> part, each its own URL
     await p.locator("#model-rrp-300 .mcard-h a").click(); await p.waitForURL("**/produkciya/rrp-300/"); assert.match(await p.locator("h1").innerText(), /РРП-300/);
     assert.ok(await p.locator("table.vtab tbody tr").count() >= 10, "variants table");
+    await pick("Тип", "механический"); assert.doesNotMatch(await p.locator(".cfg-name").innerText(), /РРП-300/, "mechanical choice must not keep the РРП-300 name");
+    await p.goto(U("/katalog/mufta-ms/ris-139/")); assert.equal(await p.locator("td.c-pos", { hasText: /^5–11$/ }).count(), 1, "assembly shown once with its position range");
+    assert.equal(await p.locator("td.c-des", { hasText: "СБ525-164-6" }).count(), 1);
     await p.goto(U("/katalog/rrp-300/")); assert.ok((await p.locator(".tile").count()) === 26, "26 node tiles");
     await p.goto(U("/katalog/rrp-300/ris-3/")); assert.equal(await p.locator("table.spec tbody tr").count(), 16);
     await p.fill("[data-filter]", "прокладка"); assert.ok((await p.locator("table.spec tbody tr:not([hidden])").count()) < 16);

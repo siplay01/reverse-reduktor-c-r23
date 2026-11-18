@@ -23,7 +23,8 @@
   const CFG = box && cfgEl ? JSON.parse(cfgEl.textContent) : { groups: [] }, groups = CFG.groups || [], sel = {};
   groups.forEach((g) => { sel[g.key] = (CFG.preset || {})[g.key] ?? g.options[0]; });
   const withUnit = (g, o) => (/^\d/.test(o) ? o + (g.unit || "") : o);
-  const modelName = () => box.dataset.model || (sel.type === "механический" ? (sel.engine === "3Д12" ? "РРП-3Д12" : sel.engine === "3Д6" ? "РРП-3Д6" : "РРП, механический") : sel.engine === "серия ЯМЗ" ? "РРП-238" : /^3Д/.test(sel.engine) ? "РРП-300" : "РРП, гидравлический");
+  const preset = CFG.preset || {}, onPreset = () => sel.type === preset.type && sel.engine === preset.engine;
+  const modelName = () => (box.dataset.model && onPreset() ? box.dataset.model : null) || (sel.type === "механический" ? (sel.engine === "3Д12" ? "РРП-3Д12" : sel.engine === "3Д6" ? "РРП-3Д6" : "РРП, механический") : sel.engine === "серия ЯМЗ" ? "РРП-238" : /^3Д/.test(sel.engine) ? "РРП-300" : "РРП, гидравлический");
   function status() {
     const sr = CFG.serial; if (!sr || sel.type !== "гидравлический" || !/^3Д/.test(sel.engine) || sel.rpm !== "1500") return null;
     const hit = sr.variants.filter((v) => String(v.hp) === sel.hp && v.forward === sel.fwd && v.reverse === sel.rev);

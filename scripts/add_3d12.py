@@ -71,6 +71,22 @@ def webp(src, base, w_list=((" ", 900), ("-420", 420), ("-1400", 1400))):
         subprocess.run(["cwebp", "-quiet", "-q", "82", str(png), "-o", str(base) + suf + ".webp"], check=True)
 
 
+def collapse_assemblies(rows):
+    """The owner's docx repeats an assembly row once per position it covers (СБ525-164-6 at 5, 6, ... 11).
+    Printed catalogs show one row "поз. 5–11": keep the first row and store the range in pos_label."""
+    out = []
+    for r in rows:
+        p = out[-1] if out else None
+        if (p and r["designation"].startswith("СБ") and r["designation"] == p["designation"] and r["name"] == p["name"]
+                and r["qty"] == p["qty"] and r["pos"] == p.get("_last", p["pos"]) + 1):
+            p["_last"] = r["pos"]; p["pos_label"] = f'{p["pos"]}\u2013{r["pos"]}'
+            continue
+        out.append(dict(r))
+    for r in out:
+        r.pop("_last", None)
+    return out
+
+
 def main(docx, d312, d1226):
     tmp = Path(tempfile.mkdtemp())
     with zipfile.ZipFile(docx) as z:
@@ -110,6 +126,7 @@ def main(docx, d312, d1226):
             if d == "СБ1226-03-1":  # source marks both barrel rows «1»; the pair 1226-17\\1 / 1225-17-2\\2 shows the second one is the post-1978 variant
                 mark = "2"
             rows.append({"pos": int(r[0]) if r[0].isdigit() else 0, "designation": d, "name": fix_name(r[1]), "qty": [q[k] for k in vcol], "note": mark})
+        rows = collapse_assemblies(rows)
         base = ROOT / f"public/img/{'3d12' if model == 'rrp-3d12' else 'mufta'}/ris-{fig}"
         base.parent.mkdir(parents=True, exist_ok=True)
         has_img = fig in imgs
