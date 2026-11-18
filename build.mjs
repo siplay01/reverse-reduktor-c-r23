@@ -7,6 +7,7 @@ const SITE_URL = (process.env.SITE_URL || "http://localhost:4341").replace(/\/$/
 const J = (p) => JSON.parse(fs.readFileSync(path.join(ROOT, p), "utf8"));
 const dir = (p) => fs.readdirSync(path.join(ROOT, p)).filter((f) => f.endsWith(".json")).sort();
 const S = J("content/settings.json"), C = S.company;
+const subj = (t) => (C.mail_tag ? `${C.mail_tag} ${t}` : t); // site tag in every mail subject: the owner sees the request came from the site
 const models = dir("content/models").map((f) => J("content/models/" + f)).sort((a, b) => a.order - b.order);
 const parts = dir("content/parts").map((f) => ({ ...J("content/parts/" + f), slug: f.replace(/\.json$/, "") }));
 const nodes = dir("content/nodes").map((f) => J("content/nodes/" + f));
@@ -51,7 +52,7 @@ const footer = `<footer class="foot foot-r2" id="kontakty"><div class="wrap"><di
   <nav aria-label="Запасные части, подвал"><p class="foot-h">Запасные части</p>${withCat.map((m) => `<a href="${u(`/katalog/${m.slug}/`)}">${esc(m.name)}</a>`).join("")}<a href="${u("/katalog/vse/")}">Все запчасти</a></nav>
   <div class="foot-req"><p class="foot-h">Реквизиты</p><dl class="req" id="req">${[["Организация", C.operator], ["ИНН / КПП", `${C.inn} / ${C.kpp}`], ["ОГРН", C.ogrn], ["Банк", C.bank], ["БИК", C.bik], ["Р/с", C.rs], ["К/с", C.ks]].map(([a, b]) => `<div><dt>${a}</dt><dd>${esc(b)}</dd></div>`).join("")}</dl><button type="button" class="linkish" data-copy-req>Скопировать реквизиты</button></div>
 </div></div></footer>
-<dialog id="cart" aria-labelledby="cart-h" data-mail="${esc(C.email)}"><div class="cart-in"><header class="cart-head"><h2 id="cart-h">Заявка</h2><button type="button" class="cart-close" data-cart-close aria-label="Закрыть">×</button></header>
+<dialog id="cart" aria-labelledby="cart-h" data-mail="${esc(C.email)}" data-mail-tag="${esc(C.mail_tag || "")}"><div class="cart-in"><header class="cart-head"><h2 id="cart-h">Заявка</h2><button type="button" class="cart-close" data-cart-close aria-label="Закрыть">×</button></header>
 <p id="cart-empty" class="muted">Список пуст. Добавьте позиции кнопкой «В запрос» в каталоге или соберите конфигурацию в конструкторе.</p><ol id="cart-items" class="cart-items"></ol>
 <div id="cart-send" class="cart-send" hidden><label for="cart-text" class="cart-lab">Текст заявки</label><textarea id="cart-text" class="cart-text" rows="9" readonly></textarea>
 <p class="small">Если письмо не открылось, скопируйте текст и отправьте его на <b id="cart-addr">${esc(C.email)}</b> <button type="button" class="linkish" data-cart-copy-addr>скопировать адрес</button></p></div>
@@ -116,7 +117,7 @@ const cfgBlock = (m) => !S.constructor ? "" : `<div class="cfg" data-config data
   <section class="sv8" id="uslugi" aria-labelledby="svc-h"><div class="wrap sv8-wrap"><div class="sv8-intro"><p class="eyebrow">Услуги</p><h2 id="svc-h">Ремонт, изготовление и&nbsp;техническое сопровождение</h2><p class="sv8-rule" aria-hidden="true"></p>
     <p class="sv8-lead">Работы выполняются по документации, согласованной с Российским Классификационным Обществом. Свидетельство о признании № ${esc(S.cert.no)}.</p><img class="sv8-bp" src="${u("/img/blueprint.webp")}" width="556" height="284" alt="" decoding="async"></div>
     <div class="sv8-list"><ul>${S.services.map((t, i) => `<li><div class="sv8-row"><span class="sv8-n">0${i + 1}</span><span class="sv8-t">${esc(t)}</span></div></li>`).join("")}</ul>
-    <p class="sv8-ask">${esc(S.services_note || "")}</p><p class="sv8-btns"><a class="btn btn-white btn-sm" href="tel:${esc(C.tel)}">${esc(C.phone)}</a><a class="btn btn-line btn-sm" href="mailto:${esc(C.email)}?subject=${encodeURIComponent("Услуги: ремонт и изготовление")}">Написать письмо</a></p>
+    <p class="sv8-ask">${esc(S.services_note || "")}</p><p class="sv8-btns"><a class="btn btn-white btn-sm" href="tel:${esc(C.tel)}">${esc(C.phone)}</a><a class="btn btn-line btn-sm" href="mailto:${esc(C.email)}?subject=${encodeURIComponent(subj("Услуги: ремонт и изготовление"))}">Написать письмо</a></p>
     <a class="sv8-docs" href="${u("/dokumenty/")}"><span class="sv8-dt">Техническая документация <svg viewBox="0 0 24 12" aria-hidden="true"><path d="M0 6h22M17 1l5 5-5 5"/></svg></span><span class="sv8-ds">Каталоги, руководства и чертежи</span></a></div></div></section>
   <section class="sec" id="svidetelstvo" aria-labelledby="cert-h"><div class="wrap"><div class="cert"><div class="cert-scan"><a href="${u("/" + S.cert.scan_large)}" target="_blank" rel="noopener"><img src="${u("/" + S.cert.scan)}" width="600" height="851" alt="Скан свидетельства о признании РКО № ${esc(S.cert.no)}" loading="lazy"></a></div>
     <div class="cert-body"><p class="cert-kicker">Российское Классификационное Общество</p><h2 id="cert-h">Свидетельство о признании № ${esc(S.cert.no)}</h2>
@@ -135,7 +136,7 @@ for (const m of models) {
   const pic = m.picture ? `<figure class="model-pic${m.status === "new" ? " is-stamp" : ""}"><img src="${u("/" + rel(m.picture))}" width="1600" height="1200" alt="${esc(m.picture_alt)}" fetchpriority="high">${m.status === "new" ? '<span class="stamp is-corner">NEW</span>' : ""}</figure>` : m.status === "new" ? (S.new_style === "stamp" ? `<figure class="model-pic is-soon is-stamp">${soonArt()}<span class="stamp">NEW</span></figure>` : `<figure class="model-pic is-newbig"><span>NEW</span></figure>`) : `<figure class="model-pic is-soon">${soonArt()}</figure>`;
   const n = parts.filter((p) => p.models.includes(catOf(m).slug)).length;
   const cta = m.status === "ready" || withCat.includes(m) ? `<a class="btn btn-white" href="${u(`/katalog/${catOf(m).slug}/`)}">Запчасти ${esc(m.name)} (${n})</a>` : "";
-  const contact = `<a class="btn btn-line" href="mailto:${esc(C.email)}?subject=${encodeURIComponent(m.name)}">Написать на ${esc(C.email)}</a> <a class="btn btn-line" href="tel:${esc(C.tel)}">${esc(C.phone)}</a>`;
+  const contact = `<a class="btn btn-line" href="mailto:${esc(C.email)}?subject=${encodeURIComponent(subj(m.name))}">Написать на ${esc(C.email)}</a> <a class="btn btn-line" href="tel:${esc(C.tel)}">${esc(C.phone)}</a>`;
   const body = `<div class="wrap model-page">${crumbs([["Продукция", "/#produkciya"], [m.name]])}${head1(`${esc(m.name)}`, "", m.designation ? `Обозначение по каталогу: ${sku(m.designation)}` : "")}
     <div class="model-grid">${pic}<div class="model-info"><p class="mcard-kind">${m.status === "ready" ? kindOf(m) : cap(m.kind)}</p><p>${esc(m.applicability)}</p>${tabs}<p class="mcard-btns">${cta} ${contact}</p></div></div>
     ${vars}${m.constructor?.enabled ? `<section class="sec-cfg-in" aria-labelledby="cfg-h"><h2 id="cfg-h">Конструктор ${esc(m.name)}</h2><p class="cfg-lead">${esc(S.constructor.lead)}</p>${cfgBlock(m)}</section>` : ""}${figs ? `<section aria-labelledby="fig-h"><h2 id="fig-h" class="sr">Чертежи</h2><div class="node-fig">${figs}</div></section>` : ""}</div>`;

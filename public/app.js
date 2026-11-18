@@ -57,7 +57,7 @@
     const copyTxt = (txt, ok) => navigator.clipboard.writeText(txt).then(() => toast(ok), () => { const ta = $("#cart-text"); ta.focus(); ta.select(); toast("Не удалось скопировать: текст выделен, нажмите Cmd/Ctrl+C"); });
     if (t.closest("[data-cart-copy]")) copyTxt(mailBody(), "Текст заявки скопирован");
     if (t.closest("[data-cart-copy-addr]")) copyTxt($("#cart").dataset.mail, "Адрес скопирован");
-    if (t.closest("[data-cart-mail]")) location.href = `mailto:${$("#cart").dataset.mail}?subject=${encodeURIComponent("Запрос запчастей, реверс-редукторы")}&body=${encodeURIComponent(mailBody())}`;
+    if (t.closest("[data-cart-mail]")) location.href = `mailto:${$("#cart").dataset.mail}?subject=${encodeURIComponent([$("#cart").dataset.mailTag, "Запрос запчастей, реверс-редукторы"].filter(Boolean).join(" "))}&body=${encodeURIComponent(mailBody())}`;
     if (t.closest("[data-copy-req]")) navigator.clipboard.writeText($$("#req div").map((d) => `${d.querySelector("dt").textContent}: ${d.querySelector("dd").textContent}`).join("\n")).then(() => toast("Реквизиты скопированы"), () => toast("Не удалось скопировать: выделите реквизиты вручную"));
   });
   // ---- variant picker on figure pages: show one quantity column; the choice is remembered for the session

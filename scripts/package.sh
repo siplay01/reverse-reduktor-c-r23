@@ -1,6 +1,7 @@
 #!/bin/bash
 # Production package for Russian shared hosting: builds for the real domain, drops the git-based admin (useless there), adds .htaccess, zips.
-# Usage: scripts/package.sh [domain] [index]   e.g. scripts/package.sh revers22.ru        (noindex, for review)
+# Usage: [HTTPS=1] scripts/package.sh [domain] [index]   e.g. scripts/package.sh revers22.ru        (noindex, for review)
+#   HTTPS=1 (after the SSL certificate is issued) turns on the http -> https redirect in .htaccess
 #                                                    scripts/package.sh revers22.ru 1      (open to Yandex/Google)
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -13,10 +14,7 @@ cat > "$OUT/.htaccess" <<'H'
 Options -Indexes
 AddDefaultCharset UTF-8
 ErrorDocument 404 /404.html
-# after the SSL certificate is issued, uncomment to force https:
-# RewriteEngine On
-# RewriteCond %{HTTPS} off
-# RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+__HTTPS__
 <IfModule mod_deflate.c>
 AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
 </IfModule>
@@ -29,5 +27,7 @@ ExpiresByType application/javascript "access plus 1 week"
 ExpiresByType text/html "access plus 10 minutes"
 </IfModule>
 H
+if [ "${HTTPS:-0}" = 1 ]; then R='RewriteEngine On\nRewriteCond %{HTTPS} off\nRewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]'; else R='# http -> https redirect is off; rebuild with HTTPS=1 after the SSL certificate is issued'; fi
+python3 -c "import sys;p=sys.argv[1];s=open(p).read().replace('__HTTPS__',sys.argv[2].replace('\\\\n','\\n'));open(p,'w').write(s)" "$OUT/.htaccess" "$R"
 (cd "$(dirname "$OUT")" && rm -f "$DOMAIN.zip" && zip -qr "$DOMAIN.zip" "$DOMAIN")
 echo "package: $OUT ($(find "$OUT" -type f | wc -l | tr -d ' ') files), zip: $(du -h "$OUT.zip" | cut -f1)  index=$IDX"
