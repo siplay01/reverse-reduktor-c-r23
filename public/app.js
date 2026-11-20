@@ -91,4 +91,24 @@
     setInterval(() => { if (hold || document.hidden) return; imgs[k].classList.remove("on"); k = (k + 1) % imgs.length; imgs[k].classList.add("on"); const c = $("figcaption", fade); if (c) { c.firstChild.textContent = imgs[k].dataset.cap; c.lastChild.textContent = imgs[k].dataset.note; } }, +fade.dataset.fade * 1000);
   }
   renderConfig(); renderCart();
+  // ---- Yandex Metrika: loads only after "Принять все"; goals for calls, e-mails and requests (no-op until consent)
+  const ck = $("#cookie");
+  if (ck) {
+    const ID = +ck.dataset.ym, CKEY = "rr-consent"; let c = null; try { c = localStorage.getItem(CKEY); } catch {}
+    const load = () => {
+      (function (m, e, t, r, i, k, a) { m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments); }; m[i].l = 1 * new Date(); k = e.createElement(t); a = e.getElementsByTagName(t)[0]; k.async = 1; k.src = r; a.parentNode.insertBefore(k, a); })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+      ym(ID, "init", { clickmap: true, trackLinks: true, accurateTrackBounce: true, webvisor: true });
+    };
+    const goal = (g) => { if (window.ym) ym(ID, "reachGoal", g); };
+    if (c === "all") load(); else if (!c) ck.hidden = false;
+    document.addEventListener("click", (e) => {
+      const t = e.target, b = t.closest("[data-consent]");
+      if (b) { try { localStorage.setItem(CKEY, b.dataset.consent); } catch {} ck.hidden = true; if (b.dataset.consent === "all") load(); return; }
+      const l = t.closest("a[href]"); if (l && l.href.startsWith("tel:")) goal("phone"); if (l && l.href.startsWith("mailto:")) goal("email");
+      if (t.closest("[data-add], [data-cfg-add]")) goal("cart_add");
+      if (t.closest("[data-cart-mail]")) goal("request_mail");
+      if (t.closest("[data-cart-copy]")) goal("request_copy");
+      if (t.closest("[data-copy-req]")) goal("requisites_copy");
+    });
+  }
 })();

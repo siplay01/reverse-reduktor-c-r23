@@ -174,3 +174,10 @@ body.static .c-ap { font-size: 14px; }
 /* header list button is hidden while the list is empty; brand mark is a raster logo */
 .btn-list[hidden] { display: none; }
 img.brand-mark { object-fit: contain; }
+
+/* cookie consent (Metrika loads only after "Принять все"); both choices have equal weight */
+.cookie { position: fixed; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 70; max-width: 720px; margin: 0 auto; padding: 16px; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: 0 8px 32px #0002; font-size: 14px; }
+.cookie p { margin: 0 0 12px; max-width: none; }
+.cookie-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.cookie-btns .btn { flex: 1 1 180px; min-height: 44px; }
+.cookie[hidden] { display: none; }
