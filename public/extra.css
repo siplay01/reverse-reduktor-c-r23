@@ -170,3 +170,7 @@ body.static .c-ap { font-size: 14px; }
 @media (max-width: 480px) { .strip-to { display: none; } .strip-c { white-space: nowrap; } }
 .strip-l { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 @media (max-width: 400px) { .strip-in { gap: 8px; } .strip-r { gap: 8px; } }
+
+/* header list button is hidden while the list is empty; brand mark is a raster logo */
+.btn-list[hidden] { display: none; }
+img.brand-mark { object-fit: contain; }

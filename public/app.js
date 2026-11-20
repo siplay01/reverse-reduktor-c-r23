@@ -13,6 +13,7 @@
   function renderCart() {
     const total = cart.reduce((s, c) => s + c.q, 0);
     $$("[data-cart-count]").forEach((el) => { el.textContent = total; el.hidden = total === 0; });
+    $$(".btn-list[data-cart-open]").forEach((el) => { el.hidden = total === 0; }); // header button only exists while the list has items
     $$("[data-cart-open]").forEach((el) => el.setAttribute("aria-label", total ? `Список запроса, всего ${total} шт.` : "Список запроса"));
     $("#cart-empty").hidden = cart.length > 0; $$("#cart [data-need-items]").forEach((b) => { b.disabled = !cart.length; });
     $("#cart-send").hidden = !cart.length; $("#cart-text").value = cart.length ? mailBody() : "";

@@ -61,9 +61,13 @@ for (const [name, eng] of [["chromium", chromium], ["webkit", webkit]]) {
     assert.equal(await p.locator("table.spec tbody tr:not([hidden])").count(), 1);
     // 3b. review fixes: count hidden until the first add, catalog search, variant picker, sticky head never over rows, stamp inside its block, one sentence once
     await p.goto(U()); await p.evaluate(() => localStorage.removeItem("rr-c19-cart")); await p.reload();
-    assert.equal(await p.locator("[data-cart-count]").first().isHidden(), true, "count hidden while the list is empty");
-    await p.goto(U("/detal/525-16-113/")); await p.click(".part-buy [data-add]");
+    assert.equal(await p.locator(".btn-list").isHidden(), true, "header list button absent while the list is empty");
+    await p.goto(U("/detal/525-16-113/")); assert.equal(await p.locator(".btn-list").isHidden(), true, "still absent on another page");
+    await p.click(".part-buy [data-add]");
+    assert.equal(await p.locator(".btn-list").isVisible(), true, "header list button appears after the first add");
     assert.equal(await p.locator("[data-cart-count]").first().isVisible(), true, "count shown after the first add");
+    await p.click(".btn-list"); await p.click("#cart [data-cart-clear]"); await p.click("[data-cart-close]");
+    assert.equal(await p.locator(".btn-list").isHidden(), true, "header list button goes away after clearing");
     await p.evaluate(() => localStorage.removeItem("rr-c19-cart"));
     await p.goto(U("/katalog/")); await p.fill("#cs", "525-16-113"); await p.press("#cs", "Enter"); await p.waitForURL("**/katalog/vse/?q=525-16-113");
     assert.equal(await p.locator("table.spec tbody tr:not([hidden])").count(), 1, "catalog search finds the part");
@@ -103,7 +107,7 @@ for (const [name, eng] of [["chromium", chromium], ["webkit", webkit]]) {
     const PAGES = ["/", "/produkciya/rrp-300/", "/katalog/", "/katalog/rrp-300/", "/katalog/rrp-300/ris-3/", "/katalog/rrp-3d12/", "/katalog/rrp-3d12/ris-123/", "/katalog/rrp-3d12/ris-134/", "/katalog/mufta-ms/", "/katalog/mufta-ms/ris-137/", "/katalog/vse/", "/detal/525-16-113/", "/dokumenty/", "/kontakty/"];
     const items = Array.from({ length: 12 }, (_, i) => ({ des: "525-16-" + (100 + i), name: "Тестовая деталь с длинным названием для переноса " + i, where: "РРП-300, рис. 3, поз. " + i, q: 3 }));
     const p = await (await b.newContext({ viewport: { width: 1000, height: 700 } })).newPage(); const bad = [];
-    await p.goto(U());
+    await p.goto(U()); await p.evaluate((it) => localStorage.setItem("rr-c19-cart", JSON.stringify(it)), items); await p.reload(); // widest header: list button shown with a 2-digit count
     for (let w = 700; w <= 1900; w += 20) { await p.setViewportSize({ width: w, height: 700 });
       const r = await p.evaluate(() => { const W = innerWidth, q = (s) => document.querySelector(s).getBoundingClientRect(), btn = q(".btn-list"), nav = q(".nav"), brand = q(".brand"); const showNav = nav.width > 0;
         return btn.right > W || document.documentElement.scrollWidth > W || (showNav && (btn.left < nav.right || nav.left < brand.right)); });

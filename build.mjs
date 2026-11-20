@@ -41,9 +41,9 @@ function write(urlPath, html) { const f = path.join(DIST, urlPath.endsWith(".htm
 const NAV = [["produkciya", "/#produkciya", "Наша продукция"], ["katalog", "/katalog/", "Запасные части"], ["uslugi", "/#uslugi", "Услуги"], ["dokumenty", "/dokumenty/", "Техническая документация"], ["kontakty", "/kontakty/", "Контакты"]];
 const strip = `<div class="strip"><div class="wrap strip-in"><span class="strip-l">${esc(C.operator)} · г. Барнаул · Судовое машиностроение</span><span class="strip-c">РКО № ${esc(S.cert.no)}<span class="strip-to"> · до ${esc(S.cert.to)}</span></span><span class="strip-r"><a href="tel:${esc(C.tel)}">${esc(C.phone)}</a>${C.phone2 ? `<a href="tel:${esc(C.tel2)}">${esc(C.phone2)}</a>` : ""}</span></div></div>`;
 const header = (section) => `<header class="head"><div class="wrap head-in">
-    <a class="brand" href="${u("/")}" aria-label="${esc(C.brand)}, на главную"><svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true"><rect x="1.5" y="1.5" width="45" height="45"/><circle cx="24" cy="24" r="10.5"/><path d="M9 37L39 12"/></svg><span><span class="brand-name">${esc(C.brand)}</span><span class="brand-sub">Судовое оборудование · ${esc(C.operator)}</span></span></a>
+    <a class="brand" href="${u("/")}" aria-label="${esc(C.brand)}, на главную"><img class="brand-mark" src="${u("/img/brand-mark.png")}" width="80" height="80" alt=""><span><span class="brand-name">${esc(C.brand)}</span><span class="brand-sub">Судовое оборудование · ${esc(C.operator)}</span></span></a>
     <nav class="nav" aria-label="Разделы">${NAV.map(([k, h, t]) => `<a href="${u(h)}"${section === k ? ' aria-current="page"' : ""}>${t}</a>`).join("")}</nav>
-    <button type="button" class="btn-list" data-cart-open aria-label="Список запроса"><svg class="bl-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg><span class="t">Список запроса</span> <span class="count" data-cart-count hidden>0</span></button>
+    <button type="button" class="btn-list" data-cart-open aria-label="Список запроса" hidden><svg class="bl-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg><span class="t">Список запроса</span> <span class="count" data-cart-count hidden>0</span></button>
     <details class="burger"><summary aria-label="Меню"><span></span></summary><nav aria-label="Разделы, мобильное меню">${NAV.map(([, h, t]) => `<a href="${u(h)}">${t}</a>`).join("")}<a href="tel:${esc(C.tel)}">${esc(C.phone)}</a>${C.phone2 ? `<a href="tel:${esc(C.tel2)}">${esc(C.phone2)}</a>` : ""}</nav></details>
   </div></header>`;
 const footer = `<footer class="foot foot-r2" id="kontakty"><div class="wrap"><div class="foot-grid">
@@ -69,7 +69,7 @@ function page({ url, title, description, section, body, ld = [], extraHead = "",
 <meta property="og:type" content="website"><meta property="og:locale" content="ru_RU"><meta property="og:site_name" content="${esc(S.seo.site_name)}"><meta property="og:title" content="${esc(full)}"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${abs(url)}"><meta property="og:image" content="${abs("/img/rrp300-drawing.webp")}">
 <meta name="color-scheme" content="light"><link rel="preload" href="${u("/fonts/golos-text-cyrillic-wght-normal.woff2")}" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="${u("/fonts.css")}"><link rel="stylesheet" href="${u("/site.css")}"><link rel="stylesheet" href="${u("/extra.css")}">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='1.5' y='1.5' width='29' height='29' fill='%23fff' stroke='%23172a3a' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="${u("/img/brand-mark.png")}">
 ${ld.map((o) => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join("\n")}${extraHead}
 </head><body class="static ${cls}"><a class="skip" href="#main">К содержанию</a>${strip}${header(section)}
 <main id="main">${body}</main>${footer}<script src="${u("/app.js")}" defer></script></body></html>`;
